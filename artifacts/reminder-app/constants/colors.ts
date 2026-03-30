@@ -1,0 +1,30 @@
+const Colors = {
+  light: {
+    background: "#FFFFFF",
+    surface: "#F5F5F5",
+    surfaceElevated: "#EBEBEB",
+    border: "#E0E0E0",
+    borderStrong: "#BDBDBD",
+    text: "#000000",
+    textSecondary: "#666666",
+    textTertiary: "#999999",
+    textInverse: "#FFFFFF",
+    accent: "#000000",
+    accentLight: "#F0F0F0",
+    destructive: "#000000",
+    success: "#000000",
+    tint: "#000000",
+    tabIconDefault: "#999999",
+    tabIconSelected: "#000000",
+    cardBackground: "#FFFFFF",
+    headerBackground: "#FFFFFF",
+    modalBackground: "#FFFFFF",
+    inputBackground: "#F5F5F5",
+    inputBorder: "#E0E0E0",
+    priorityLow: "#CCCCCC",
+    priorityMedium: "#888888",
+    priorityHigh: "#000000",
+  },
+};
+
+export default Colors;
