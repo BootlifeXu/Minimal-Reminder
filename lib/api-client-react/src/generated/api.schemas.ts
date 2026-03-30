@@ -8,3 +8,214 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface AuthUser {
+  id: string;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  firstName: string | null;
+  /** @nullable */
+  lastName: string | null;
+  /** @nullable */
+  profileImageUrl: string | null;
+}
+
+export interface AuthUserEnvelope {
+  user: AuthUser | null;
+}
+
+export interface MobileTokenExchangeRequest {
+  /** @minLength 1 */
+  code: string;
+  /** @minLength 1 */
+  code_verifier: string;
+  /** @minLength 1 */
+  redirect_uri: string;
+  /** @minLength 1 */
+  state: string;
+  /** @minLength 1 */
+  nonce?: string;
+}
+
+export interface MobileTokenExchangeSuccess {
+  token: string;
+}
+
+export const LogoutSuccessValue = {
+  success: true,
+} as const;
+export type LogoutSuccess = typeof LogoutSuccessValue;
+
+export interface ErrorEnvelope {
+  error: string;
+}
+
+export type ReminderItemPriority =
+  (typeof ReminderItemPriority)[keyof typeof ReminderItemPriority];
+
+export const ReminderItemPriority = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+} as const;
+
+export type ReminderItemCategory =
+  (typeof ReminderItemCategory)[keyof typeof ReminderItemCategory];
+
+export const ReminderItemCategory = {
+  personal: "personal",
+  work: "work",
+  health: "health",
+  study: "study",
+  other: "other",
+} as const;
+
+export type ReminderItemRepeatInterval =
+  (typeof ReminderItemRepeatInterval)[keyof typeof ReminderItemRepeatInterval];
+
+export const ReminderItemRepeatInterval = {
+  none: "none",
+  daily: "daily",
+  weekly: "weekly",
+  monthly: "monthly",
+  yearly: "yearly",
+} as const;
+
+export interface ReminderItem {
+  id: string;
+  title: string;
+  notes: string;
+  dateTime: string;
+  isCompleted: boolean;
+  priority: ReminderItemPriority;
+  category: ReminderItemCategory;
+  repeatInterval: ReminderItemRepeatInterval;
+  isSnoozed: boolean;
+  /** @nullable */
+  snoozeUntil?: string | null;
+  /** @nullable */
+  notificationId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RemindersListResponse {
+  reminders: ReminderItem[];
+}
+
+export interface ReminderResponse {
+  reminder: ReminderItem;
+}
+
+export type CreateReminderRequestPriority =
+  (typeof CreateReminderRequestPriority)[keyof typeof CreateReminderRequestPriority];
+
+export const CreateReminderRequestPriority = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+} as const;
+
+export type CreateReminderRequestCategory =
+  (typeof CreateReminderRequestCategory)[keyof typeof CreateReminderRequestCategory];
+
+export const CreateReminderRequestCategory = {
+  personal: "personal",
+  work: "work",
+  health: "health",
+  study: "study",
+  other: "other",
+} as const;
+
+export type CreateReminderRequestRepeatInterval =
+  (typeof CreateReminderRequestRepeatInterval)[keyof typeof CreateReminderRequestRepeatInterval];
+
+export const CreateReminderRequestRepeatInterval = {
+  none: "none",
+  daily: "daily",
+  weekly: "weekly",
+  monthly: "monthly",
+  yearly: "yearly",
+} as const;
+
+export interface CreateReminderRequest {
+  id: string;
+  title: string;
+  notes?: string;
+  dateTime: string;
+  priority: CreateReminderRequestPriority;
+  category: CreateReminderRequestCategory;
+  repeatInterval: CreateReminderRequestRepeatInterval;
+  isSnoozed?: boolean;
+  /** @nullable */
+  snoozeUntil?: string | null;
+  isCompleted?: boolean;
+}
+
+export type UpdateReminderRequestPriority =
+  (typeof UpdateReminderRequestPriority)[keyof typeof UpdateReminderRequestPriority];
+
+export const UpdateReminderRequestPriority = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+} as const;
+
+export type UpdateReminderRequestCategory =
+  (typeof UpdateReminderRequestCategory)[keyof typeof UpdateReminderRequestCategory];
+
+export const UpdateReminderRequestCategory = {
+  personal: "personal",
+  work: "work",
+  health: "health",
+  study: "study",
+  other: "other",
+} as const;
+
+export type UpdateReminderRequestRepeatInterval =
+  (typeof UpdateReminderRequestRepeatInterval)[keyof typeof UpdateReminderRequestRepeatInterval];
+
+export const UpdateReminderRequestRepeatInterval = {
+  none: "none",
+  daily: "daily",
+  weekly: "weekly",
+  monthly: "monthly",
+  yearly: "yearly",
+} as const;
+
+export interface UpdateReminderRequest {
+  title?: string;
+  notes?: string;
+  dateTime?: string;
+  isCompleted?: boolean;
+  priority?: UpdateReminderRequestPriority;
+  category?: UpdateReminderRequestCategory;
+  repeatInterval?: UpdateReminderRequestRepeatInterval;
+  isSnoozed?: boolean;
+  /** @nullable */
+  snoozeUntil?: string | null;
+}
+
+export interface SyncRemindersRequest {
+  reminders: CreateReminderRequest[];
+}
+
+export interface DeleteSuccess {
+  success: boolean;
+}
+
+/**
+ * Opaque session token — Bearer <sid>.
+ */
+export type AuthorizationSessionHeaderParameter = string;
+
+export type BeginBrowserLoginParams = {
+  returnTo?: string;
+};
+
+export type HandleBrowserLoginCallbackParams = {
+  code?: string;
+  state?: string;
+  iss?: string;
+};

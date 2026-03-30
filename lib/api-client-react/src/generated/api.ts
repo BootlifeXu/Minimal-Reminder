@@ -5,18 +5,36 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  AuthUserEnvelope,
+  BeginBrowserLoginParams,
+  CreateReminderRequest,
+  DeleteSuccess,
+  ErrorEnvelope,
+  HandleBrowserLoginCallbackParams,
+  HealthStatus,
+  LogoutSuccess,
+  MobileTokenExchangeRequest,
+  MobileTokenExchangeSuccess,
+  ReminderResponse,
+  RemindersListResponse,
+  SyncRemindersRequest,
+  UpdateReminderRequest,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +117,945 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Get the currently authenticated user
+ */
+export const getGetCurrentAuthUserUrl = () => {
+  return `/api/auth/user`;
+};
+
+export const getCurrentAuthUser = async (
+  options?: RequestInit,
+): Promise<AuthUserEnvelope> => {
+  return customFetch<AuthUserEnvelope>(getGetCurrentAuthUserUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCurrentAuthUserQueryKey = () => {
+  return [`/api/auth/user`] as const;
+};
+
+export const getGetCurrentAuthUserQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCurrentAuthUser>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCurrentAuthUser>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCurrentAuthUserQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCurrentAuthUser>>
+  > = ({ signal }) => getCurrentAuthUser({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCurrentAuthUser>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCurrentAuthUserQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCurrentAuthUser>>
+>;
+export type GetCurrentAuthUserQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get the currently authenticated user
+ */
+
+export function useGetCurrentAuthUser<
+  TData = Awaited<ReturnType<typeof getCurrentAuthUser>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCurrentAuthUser>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCurrentAuthUserQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Start the browser OIDC login flow
+ */
+export const getBeginBrowserLoginUrl = (params?: BeginBrowserLoginParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/login?${stringifiedParams}`
+    : `/api/login`;
+};
+
+export const beginBrowserLogin = async (
+  params?: BeginBrowserLoginParams,
+  options?: RequestInit,
+): Promise<unknown> => {
+  return customFetch<unknown>(getBeginBrowserLoginUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getBeginBrowserLoginQueryKey = (
+  params?: BeginBrowserLoginParams,
+) => {
+  return [`/api/login`, ...(params ? [params] : [])] as const;
+};
+
+export const getBeginBrowserLoginQueryOptions = <
+  TData = Awaited<ReturnType<typeof beginBrowserLogin>>,
+  TError = ErrorType<void>,
+>(
+  params?: BeginBrowserLoginParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof beginBrowserLogin>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getBeginBrowserLoginQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof beginBrowserLogin>>
+  > = ({ signal }) => beginBrowserLogin(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof beginBrowserLogin>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type BeginBrowserLoginQueryResult = NonNullable<
+  Awaited<ReturnType<typeof beginBrowserLogin>>
+>;
+export type BeginBrowserLoginQueryError = ErrorType<void>;
+
+/**
+ * @summary Start the browser OIDC login flow
+ */
+
+export function useBeginBrowserLogin<
+  TData = Awaited<ReturnType<typeof beginBrowserLogin>>,
+  TError = ErrorType<void>,
+>(
+  params?: BeginBrowserLoginParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof beginBrowserLogin>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getBeginBrowserLoginQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Complete the browser OIDC login flow
+ */
+export const getHandleBrowserLoginCallbackUrl = (
+  params?: HandleBrowserLoginCallbackParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/callback?${stringifiedParams}`
+    : `/api/callback`;
+};
+
+export const handleBrowserLoginCallback = async (
+  params?: HandleBrowserLoginCallbackParams,
+  options?: RequestInit,
+): Promise<unknown> => {
+  return customFetch<unknown>(getHandleBrowserLoginCallbackUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getHandleBrowserLoginCallbackQueryKey = (
+  params?: HandleBrowserLoginCallbackParams,
+) => {
+  return [`/api/callback`, ...(params ? [params] : [])] as const;
+};
+
+export const getHandleBrowserLoginCallbackQueryOptions = <
+  TData = Awaited<ReturnType<typeof handleBrowserLoginCallback>>,
+  TError = ErrorType<void>,
+>(
+  params?: HandleBrowserLoginCallbackParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof handleBrowserLoginCallback>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getHandleBrowserLoginCallbackQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof handleBrowserLoginCallback>>
+  > = ({ signal }) =>
+    handleBrowserLoginCallback(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof handleBrowserLoginCallback>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type HandleBrowserLoginCallbackQueryResult = NonNullable<
+  Awaited<ReturnType<typeof handleBrowserLoginCallback>>
+>;
+export type HandleBrowserLoginCallbackQueryError = ErrorType<void>;
+
+/**
+ * @summary Complete the browser OIDC login flow
+ */
+
+export function useHandleBrowserLoginCallback<
+  TData = Awaited<ReturnType<typeof handleBrowserLoginCallback>>,
+  TError = ErrorType<void>,
+>(
+  params?: HandleBrowserLoginCallbackParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof handleBrowserLoginCallback>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getHandleBrowserLoginCallbackQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Clear the session and begin OIDC logout
+ */
+export const getLogoutBrowserSessionUrl = () => {
+  return `/api/logout`;
+};
+
+export const logoutBrowserSession = async (
+  options?: RequestInit,
+): Promise<unknown> => {
+  return customFetch<unknown>(getLogoutBrowserSessionUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getLogoutBrowserSessionQueryKey = () => {
+  return [`/api/logout`] as const;
+};
+
+export const getLogoutBrowserSessionQueryOptions = <
+  TData = Awaited<ReturnType<typeof logoutBrowserSession>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof logoutBrowserSession>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getLogoutBrowserSessionQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof logoutBrowserSession>>
+  > = ({ signal }) => logoutBrowserSession({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof logoutBrowserSession>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type LogoutBrowserSessionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof logoutBrowserSession>>
+>;
+export type LogoutBrowserSessionQueryError = ErrorType<void>;
+
+/**
+ * @summary Clear the session and begin OIDC logout
+ */
+
+export function useLogoutBrowserSession<
+  TData = Awaited<ReturnType<typeof logoutBrowserSession>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof logoutBrowserSession>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getLogoutBrowserSessionQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Exchange a mobile OIDC code for a session token
+ */
+export const getExchangeMobileAuthorizationCodeUrl = () => {
+  return `/api/mobile-auth/token-exchange`;
+};
+
+export const exchangeMobileAuthorizationCode = async (
+  mobileTokenExchangeRequest: MobileTokenExchangeRequest,
+  options?: RequestInit,
+): Promise<MobileTokenExchangeSuccess> => {
+  return customFetch<MobileTokenExchangeSuccess>(
+    getExchangeMobileAuthorizationCodeUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(mobileTokenExchangeRequest),
+    },
+  );
+};
+
+export const getExchangeMobileAuthorizationCodeMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof exchangeMobileAuthorizationCode>>,
+    TError,
+    { data: BodyType<MobileTokenExchangeRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof exchangeMobileAuthorizationCode>>,
+  TError,
+  { data: BodyType<MobileTokenExchangeRequest> },
+  TContext
+> => {
+  const mutationKey = ["exchangeMobileAuthorizationCode"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof exchangeMobileAuthorizationCode>>,
+    { data: BodyType<MobileTokenExchangeRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return exchangeMobileAuthorizationCode(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ExchangeMobileAuthorizationCodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof exchangeMobileAuthorizationCode>>
+>;
+export type ExchangeMobileAuthorizationCodeMutationBody =
+  BodyType<MobileTokenExchangeRequest>;
+export type ExchangeMobileAuthorizationCodeMutationError =
+  ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Exchange a mobile OIDC code for a session token
+ */
+export const useExchangeMobileAuthorizationCode = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof exchangeMobileAuthorizationCode>>,
+    TError,
+    { data: BodyType<MobileTokenExchangeRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof exchangeMobileAuthorizationCode>>,
+  TError,
+  { data: BodyType<MobileTokenExchangeRequest> },
+  TContext
+> => {
+  return useMutation(
+    getExchangeMobileAuthorizationCodeMutationOptions(options),
+  );
+};
+
+/**
+ * @summary Delete a mobile session token
+ */
+export const getLogoutMobileSessionUrl = () => {
+  return `/api/mobile-auth/logout`;
+};
+
+export const logoutMobileSession = async (
+  options?: RequestInit,
+): Promise<LogoutSuccess> => {
+  return customFetch<LogoutSuccess>(getLogoutMobileSessionUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getLogoutMobileSessionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof logoutMobileSession>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof logoutMobileSession>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["logoutMobileSession"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof logoutMobileSession>>,
+    void
+  > = () => {
+    return logoutMobileSession(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type LogoutMobileSessionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof logoutMobileSession>>
+>;
+
+export type LogoutMobileSessionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a mobile session token
+ */
+export const useLogoutMobileSession = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof logoutMobileSession>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof logoutMobileSession>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getLogoutMobileSessionMutationOptions(options));
+};
+
+/**
+ * @summary List all reminders for the authenticated user
+ */
+export const getListRemindersUrl = () => {
+  return `/api/reminders`;
+};
+
+export const listReminders = async (
+  options?: RequestInit,
+): Promise<RemindersListResponse> => {
+  return customFetch<RemindersListResponse>(getListRemindersUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListRemindersQueryKey = () => {
+  return [`/api/reminders`] as const;
+};
+
+export const getListRemindersQueryOptions = <
+  TData = Awaited<ReturnType<typeof listReminders>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listReminders>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListRemindersQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listReminders>>> = ({
+    signal,
+  }) => listReminders({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listReminders>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListRemindersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listReminders>>
+>;
+export type ListRemindersQueryError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary List all reminders for the authenticated user
+ */
+
+export function useListReminders<
+  TData = Awaited<ReturnType<typeof listReminders>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listReminders>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListRemindersQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new reminder
+ */
+export const getCreateReminderUrl = () => {
+  return `/api/reminders`;
+};
+
+export const createReminder = async (
+  createReminderRequest: CreateReminderRequest,
+  options?: RequestInit,
+): Promise<ReminderResponse> => {
+  return customFetch<ReminderResponse>(getCreateReminderUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createReminderRequest),
+  });
+};
+
+export const getCreateReminderMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createReminder>>,
+    TError,
+    { data: BodyType<CreateReminderRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createReminder>>,
+  TError,
+  { data: BodyType<CreateReminderRequest> },
+  TContext
+> => {
+  const mutationKey = ["createReminder"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createReminder>>,
+    { data: BodyType<CreateReminderRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createReminder(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateReminderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createReminder>>
+>;
+export type CreateReminderMutationBody = BodyType<CreateReminderRequest>;
+export type CreateReminderMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Create a new reminder
+ */
+export const useCreateReminder = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createReminder>>,
+    TError,
+    { data: BodyType<CreateReminderRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createReminder>>,
+  TError,
+  { data: BodyType<CreateReminderRequest> },
+  TContext
+> => {
+  return useMutation(getCreateReminderMutationOptions(options));
+};
+
+/**
+ * @summary Update a reminder
+ */
+export const getUpdateReminderUrl = (id: string) => {
+  return `/api/reminders/${id}`;
+};
+
+export const updateReminder = async (
+  id: string,
+  updateReminderRequest: UpdateReminderRequest,
+  options?: RequestInit,
+): Promise<ReminderResponse> => {
+  return customFetch<ReminderResponse>(getUpdateReminderUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateReminderRequest),
+  });
+};
+
+export const getUpdateReminderMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateReminder>>,
+    TError,
+    { id: string; data: BodyType<UpdateReminderRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateReminder>>,
+  TError,
+  { id: string; data: BodyType<UpdateReminderRequest> },
+  TContext
+> => {
+  const mutationKey = ["updateReminder"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateReminder>>,
+    { id: string; data: BodyType<UpdateReminderRequest> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateReminder(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateReminderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateReminder>>
+>;
+export type UpdateReminderMutationBody = BodyType<UpdateReminderRequest>;
+export type UpdateReminderMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Update a reminder
+ */
+export const useUpdateReminder = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateReminder>>,
+    TError,
+    { id: string; data: BodyType<UpdateReminderRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateReminder>>,
+  TError,
+  { id: string; data: BodyType<UpdateReminderRequest> },
+  TContext
+> => {
+  return useMutation(getUpdateReminderMutationOptions(options));
+};
+
+/**
+ * @summary Delete a reminder
+ */
+export const getDeleteReminderUrl = (id: string) => {
+  return `/api/reminders/${id}`;
+};
+
+export const deleteReminder = async (
+  id: string,
+  options?: RequestInit,
+): Promise<DeleteSuccess> => {
+  return customFetch<DeleteSuccess>(getDeleteReminderUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteReminderMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteReminder>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteReminder>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteReminder"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteReminder>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteReminder(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteReminderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteReminder>>
+>;
+
+export type DeleteReminderMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Delete a reminder
+ */
+export const useDeleteReminder = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteReminder>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteReminder>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteReminderMutationOptions(options));
+};
+
+/**
+ * @summary Bulk sync local reminders to server
+ */
+export const getSyncRemindersUrl = () => {
+  return `/api/reminders/sync`;
+};
+
+export const syncReminders = async (
+  syncRemindersRequest: SyncRemindersRequest,
+  options?: RequestInit,
+): Promise<RemindersListResponse> => {
+  return customFetch<RemindersListResponse>(getSyncRemindersUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(syncRemindersRequest),
+  });
+};
+
+export const getSyncRemindersMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof syncReminders>>,
+    TError,
+    { data: BodyType<SyncRemindersRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof syncReminders>>,
+  TError,
+  { data: BodyType<SyncRemindersRequest> },
+  TContext
+> => {
+  const mutationKey = ["syncReminders"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof syncReminders>>,
+    { data: BodyType<SyncRemindersRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return syncReminders(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SyncRemindersMutationResult = NonNullable<
+  Awaited<ReturnType<typeof syncReminders>>
+>;
+export type SyncRemindersMutationBody = BodyType<SyncRemindersRequest>;
+export type SyncRemindersMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Bulk sync local reminders to server
+ */
+export const useSyncReminders = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof syncReminders>>,
+    TError,
+    { data: BodyType<SyncRemindersRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof syncReminders>>,
+  TError,
+  { data: BodyType<SyncRemindersRequest> },
+  TContext
+> => {
+  return useMutation(getSyncRemindersMutationOptions(options));
+};

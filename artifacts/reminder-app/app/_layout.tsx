@@ -8,25 +8,45 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import * as WebBrowser from "expo-web-browser";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import GreetingModal from "@/components/GreetingModal";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import { RemindersProvider } from "@/context/RemindersContext";
 
+WebBrowser.maybeCompleteAuthSession();
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-function RootLayoutNav() {
+function AppWithGreeting() {
+  const { user } = useAuth();
+  const displayName = user
+    ? [user.firstName, user.lastName].filter(Boolean).join(" ") || null
+    : null;
+
   return (
-    <RemindersProvider>
+    <>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
-    </RemindersProvider>
+      <GreetingModal userName={displayName} />
+    </>
+  );
+}
+
+function RootLayoutNav() {
+  return (
+    <AuthProvider>
+      <RemindersProvider>
+        <AppWithGreeting />
+      </RemindersProvider>
+    </AuthProvider>
   );
 }
 

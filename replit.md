@@ -50,7 +50,9 @@ A minimalist black-and-white Android/iOS reminder app built with Expo + React Na
 - Full-text search across title and notes
 - Local notifications via expo-notifications (native only)
 - Persistent storage via AsyncStorage
-- Stats overview in Settings
+- Optional cloud sync via Replit Auth (login from Settings)
+- Once-per-day personalized greeting modal on app open
+- Stats overview in Settings (Active / Completed / Total)
 
 ### Design System
 - Colors: Strict 2-color (black + white)
@@ -60,12 +62,27 @@ A minimalist black-and-white Android/iOS reminder app built with Expo + React Na
 
 ### Architecture
 - State: React Context + AsyncStorage (offline-first)
-- No backend (local-only, with cloud sync as optional future feature)
+- Auth: Replit OIDC PKCE via expo-auth-session + expo-secure-store → `lib/auth.tsx`
+- Cloud sync: when logged in, RemindersContext syncs on load and mirrors writes to API
 - Expo Router for file-based navigation
+- Env vars injected in dev script: EXPO_PUBLIC_DOMAIN, EXPO_PUBLIC_REPL_ID
 
 ## API Server (`artifacts/api-server`)
 
 Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` for request and response validation.
+
+### Auth & Sync Endpoints
+- `GET /api/auth/user` — return current user from session
+- `GET /api/login` — OIDC PKCE login redirect
+- `GET /api/callback` — OIDC callback handler
+- `GET /api/logout` — clear session + OIDC logout
+- `POST /api/mobile-auth/token-exchange` — exchange mobile PKCE code for session token
+- `POST /api/mobile-auth/logout` — delete mobile session
+- `GET /api/reminders` — list all reminders for authenticated user
+- `POST /api/reminders` — create reminder
+- `PUT /api/reminders/:id` — update reminder
+- `DELETE /api/reminders/:id` — delete reminder
+- `POST /api/reminders/sync` — bulk upsert (initial sync from device)
 
 ## TypeScript & Composite Projects
 
