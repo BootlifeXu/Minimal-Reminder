@@ -1,0 +1,45 @@
+name: Deploy API
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-api:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build API server
+      run: cd artifacts/api-server && pnpm run build
+
+    - name: Deploy to Render (optional)
+      if: secrets.RENDER_SERVICE_ID && secrets.RENDER_API_KEY
+      run: |
+        curl -X POST "https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}" \
+          -H "Accept: application/json" \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+
+    - name: Deploy to Railway (optional)
+      if: secrets.RAILWAY_TOKEN && secrets.RAILWAY_PROJECT_ID
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      run: |
+        curl -X POST "https://backboard.railway.app/project/${{ secrets.RAILWAY_PROJECT_ID }}/deploy" \
+          -H "Authorization: Bearer $RAILWAY_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{}'
