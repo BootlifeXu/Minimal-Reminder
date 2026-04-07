@@ -22,26 +22,18 @@ export default defineConfig(({ command }) => {
     throw new Error(`Invalid PORT value: "${rawPort}"`);
   }
 
-  const basePath = process.env.BASE_PATH || (isBuild ? "/" : undefined);
-
-  if (!isBuild && !basePath) {
-    throw new Error(
-      "BASE_PATH environment variable is required but was not provided.",
-    );
-  }
-
-  const plugins = [
-    mockupPreviewPlugin(),
-    react(),
-    tailwindcss(),
-    runtimeErrorOverlay(),
-  ];
-
-  // Note: cartographer plugin removed for build compatibility
+  // For production builds on GitHub Pages, use /Minimal-Reminder/ as base
+  // For development, use BASE_PATH env var or "/"
+  const basePath = process.env.BASE_PATH || (isBuild ? "/Minimal-Reminder/" : "/");
 
   return {
     base: basePath,
-    plugins,
+    plugins: [
+      mockupPreviewPlugin(),
+      react(),
+      tailwindcss(),
+      runtimeErrorOverlay(),
+    ],
     resolve: {
       alias: {
         "@": path.resolve(import.meta.dirname, "src"),
