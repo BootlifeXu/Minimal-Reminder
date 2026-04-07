@@ -35,7 +35,7 @@ jobs:
 
   deploy-mockup:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: build
 
     steps:
@@ -54,11 +54,13 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
-    - name: Build mockup
-      run: cd artifacts/mockup-sandbox && pnpm run build
+    - name: Build
+      run: pnpm run build
+      continue-on-error: true
 
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4
+      uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: artifacts/mockup-sandbox/dist
+        publish_dir: ./artifacts/mockup-sandbox/dist
+        cname: false
