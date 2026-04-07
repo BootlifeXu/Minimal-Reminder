@@ -117,7 +117,7 @@ router.put("/reminders/:id", async (req: Request, res: Response) => {
     return;
   }
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const r = req.body;
     const updateData: Record<string, any> = { updatedAt: new Date() };
     if (r.title !== undefined) updateData.title = r.title;
@@ -153,7 +153,7 @@ router.delete("/reminders/:id", async (req: Request, res: Response) => {
     return;
   }
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await db
       .delete(remindersTable)
       .where(and(eq(remindersTable.id, id), eq(remindersTable.userId, req.user.id)));
